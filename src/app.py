@@ -39,14 +39,14 @@ def add_page():
         note_title = request.request.form.keys()[0]['title']
         note_text = request.request.form.keys()[0]['note']
 
+        return note_title
 
+        #client = NotionClient(token_v2)
+        #page = client.get_block(notebook_link)
 
-        client = NotionClient(token_v2)
-        page = client.get_block(notebook_link)
-
-        today = date.today()
-        new_page = page.children.add_new(PageBlock, title=today.strftime("%d/%m/%y") + ": " + note_title)
-        new_page.children.add_new(TextBlock, title=note_text)
+        #today = date.today()
+        #new_page = page.children.add_new(PageBlock, title=today.strftime("%d/%m/%y") + ": " + note_title)
+        #new_page.children.add_new(TextBlock, title=note_text)
 
         return 'The page added', 200
     except Exception:
