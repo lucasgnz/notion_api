@@ -33,13 +33,14 @@ def add_block():
 
 @app.route('/add_page', methods=['GET','POST'])
 def add_page():
+    return 'OK'
     #try:
-    token_v2 = request.json['token']
+    """token_v2 = request.json['token']
     notebook_link = request.json['link']
     note_title = request.json['title']
     note_text = request.json['note']
 
-    print(token_v2)
+    print(token_v2
 
     #client = NotionClient(token_v2)
     #page = client.get_block(notebook_link)
@@ -47,7 +48,7 @@ def add_page():
     #today = date.today()
     #new_page = page.children.add_new(PageBlock, title=today.strftime("%d/%m/%y") + ": " + note_title)
     #new_page.children.add_new(TextBlock, title=note_text)
-    """
+
         return 'The page added', 200
     except Exception:
         return 'Adding the page failed', 500     
