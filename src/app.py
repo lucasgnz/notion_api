@@ -43,7 +43,7 @@ def add_page():
 
         client = NotionClient(token_v2)
 
-        return client
+        return note_text
         #page = client.get_block(notebook_link)
 
         #today = date.today()
