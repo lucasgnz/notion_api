@@ -1,7 +1,7 @@
 from datetime import date
 
 from notion.client import NotionClient
-from notion.block.basic import TextBlock, PageBlock 
+from notion.block import TextBlock, PageBlock
 
 from flask import Flask, request, jsonify
 app = Flask(__name__)
