@@ -47,8 +47,10 @@ def add_page():
         new_page = page.children.add_new(PageBlock, title=today.strftime("%d/%m/%y") + ": " + note_title)
         new_page.children.add_new(TextBlock, title=note_text)
 
+        print("SUCCESS")
         return 'The page added', 200
-    except Exception:
+    except Exception as e:
+        print("ERROR {}".format(e))
         return 'Adding the page failed', 500
 
 @app.route('/add_record', methods=['POST'])
