@@ -33,6 +33,7 @@ def add_block():
 
 @app.route('/add_page', methods=['POST'])
 def add_page():
+    return request.json
     return request.json['token']
     #try:
     """token_v2 = request.json['token']
