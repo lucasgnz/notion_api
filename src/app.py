@@ -31,7 +31,7 @@ def add_block():
     except Exception:
         return 'Adding the note failed', 500
 
-@app.route('/add_page', methods=['POST'])
+@app.route('/add_page', methods=['GET','POST'])
 def add_page():
     #try:
     token_v2 = request.json['token']
