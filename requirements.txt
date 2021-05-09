@@ -1,3 +1,3 @@
--e https://github.com/lucasgnz/notion-py.git
+-e git://github.com/lucasgnz/notion-py.git
 Flask==1.1.2
 gunicorn==20.0.4
