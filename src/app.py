@@ -39,7 +39,9 @@ def add_page():
     note_title = request.json['title']
     note_text = request.json['note']
 
-    client = NotionClient(token_v2)
+    print(token_v2)
+
+    #client = NotionClient(token_v2)
     #page = client.get_block(notebook_link)
 
     #today = date.today()
