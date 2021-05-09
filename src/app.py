@@ -34,6 +34,7 @@ def add_block():
 @app.route('/add_page', methods=['POST'])
 def add_page():
     try:
+        print(request, request.form, request.form.keys())
         token_v2 = request.form.keys()[0]['token']
         notebook_link = request.form.keys()[0]['link']
         note_title = request.form.keys()[0]['title']
