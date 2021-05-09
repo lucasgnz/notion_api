@@ -42,9 +42,9 @@ def add_page():
 
 
         client = NotionClient(token_v2)
+        page = client.get_block(notebook_link)
 
         return note_text
-        #page = client.get_block(notebook_link)
 
         #today = date.today()
         #new_page = page.children.add_new(PageBlock, title=today.strftime("%d/%m/%y") + ": " + note_title)
