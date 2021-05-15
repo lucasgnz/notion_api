@@ -4,6 +4,10 @@ from notion.client import NotionClient
 from notion.block import TextBlock, PageBlock
 
 from flask import Flask, request, jsonify
+
+
+from cron import cron
+
 app = Flask(__name__)
 
 
@@ -69,7 +73,20 @@ def add_record():
 
         return 'The record added', 200
     except Exception:
-        return 'Adding the record failed', 500            
+        return 'Adding the record failed', 500
+
+
+
+@app.route('/cron', methods=['POST'])
+def cron():
+    try:
+        print(request.form)
+        token = request.form['token']
+        cron(token)
+        return 'Cron script executed', 200
+    except Exception as e:
+        print("ERROR {}".format(e))
+        return 'Cron script failed', 500
 
 if __name__ == '__main__':
     app.run(threaded=True, port=5000)        
