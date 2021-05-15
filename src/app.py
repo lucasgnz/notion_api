@@ -82,7 +82,7 @@ def cron_():
     try:
         print(request.form)
         token = request.form['token']
-        cron(token)
+        return cron(token)
         return 'Cron script executed', 200
     except Exception as e:
         print("ERROR {}".format(e))
