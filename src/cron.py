@@ -16,6 +16,6 @@ def get_db_content(token, id):
 
 def cron(token):
 
-    db = json.dump(get_db_content(token, '4b7625673a034a789bf055aabd180a0c'))
+    db = json.dumps(get_db_content(token, '4b7625673a034a789bf055aabd180a0c'))
     #print(db)
     return db
