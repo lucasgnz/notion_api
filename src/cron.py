@@ -12,7 +12,7 @@ def get_db_content(token, id):
 
     response = requests.post('https://api.notion.com/v1/databases/'+id+'/query', headers=headers, data=data)
 
-    return response.json
+    return response.json()
 
 def cron(token):
 
