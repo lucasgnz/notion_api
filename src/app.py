@@ -78,7 +78,7 @@ def add_record():
 
 
 @app.route('/cron', methods=['POST'])
-def cron():
+def cron_():
     try:
         print(request.form)
         token = request.form['token']
