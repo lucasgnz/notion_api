@@ -77,7 +77,7 @@ def add_record():
 
 
 
-@app.route('/cron', methods=['POST'])
+@app.route('/cron_', methods=['POST'])
 def cron_():
     try:
         print(request.form)
