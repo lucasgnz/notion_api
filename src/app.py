@@ -6,7 +6,7 @@ from notion.block import TextBlock, PageBlock
 from flask import Flask, request, jsonify
 
 
-from cron import cron
+from cron_v2 import cron
 
 app = Flask(__name__)
 
@@ -82,7 +82,8 @@ def cron_():
     try:
         print(request.form)
         token = request.form['token']
-        return cron(token)
+        token_v2 = request.form['token_v2']
+        cron(token, token_v2)
         return 'Cron script executed', 200
     except Exception as e:
         print("ERROR {}".format(e))
