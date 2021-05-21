@@ -2,7 +2,7 @@ import requests
 import furl
 import time
 from notion.block import TextBlock, PageBlock, QuoteBlock, CalloutBlock
-from config import *
+from .config import *
 
 def error(token, client, title, content):
     print("ERROR: {} / {}".format(title, content))
