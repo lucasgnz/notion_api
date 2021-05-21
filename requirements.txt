@@ -1,4 +1,5 @@
 -e git://github.com/lucasgnz/notion-py.git#egg=notion
+-e git://github.com/lucasgnz/workflow.git
 Flask==1.1.2
 gunicorn==20.0.4
 furl
