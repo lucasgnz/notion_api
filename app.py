@@ -8,7 +8,7 @@ from flask import Flask, request, jsonify
 
 from highlights_sync import cron
 
-from email import email
+from email import email_to_notion
 
 app = Flask(__name__)
 
