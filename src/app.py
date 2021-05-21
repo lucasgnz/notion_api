@@ -5,9 +5,8 @@ from notion.block import TextBlock, PageBlock
 
 from flask import Flask, request
 
-from highlights_sync import sync
-
-#from .email import email_to_notion
+from workflow.highlights_sync import sync
+from workflow.email_to_notion import transfer_email_to_notion
 
 app = Flask(__name__)
 
@@ -82,7 +81,7 @@ def add_record():
 def email():
     try:
         token = request.form['token']
-        #email_to_notion(token, request.form['title'], request.form['note'])
+        transfer_email_to_notion(token, request.form['title'], request.form['note'])
         return 'Email script executed', 200
     except Exception as e:
         print("ERROR {}".format(e))
