@@ -1,7 +1,7 @@
 import config
 import utils
 
-def email(token, title, note):
+def email_to_notion(token, title, note):
     metadata = note.split("\n")
 
     print(metadata)
