@@ -1,5 +1,5 @@
-import notion_api.config
-import notion_api.utils
+import config
+import utils
 
 def email(token, title, note):
     metadata = note.split("\n")

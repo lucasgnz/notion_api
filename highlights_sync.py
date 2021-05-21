@@ -1,8 +1,8 @@
 from notion.client import NotionClient
 
-from notion_api.utils import *
+from utils import *
 
-from notion_api.config import *
+from config import *
 
 def update_main_page(token, client, main_page_id, title, highlights, metadata):
     print("Adding {} highlights to {}".format(len(highlights), title))
