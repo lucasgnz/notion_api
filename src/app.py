@@ -6,7 +6,7 @@ from notion.block import TextBlock, PageBlock
 from flask import Flask, request, jsonify
 
 
-from ..highlights_sync import sync
+from highlights_sync import sync
 
 #from .email import email_to_notion
 
