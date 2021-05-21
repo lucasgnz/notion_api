@@ -3,8 +3,7 @@ from datetime import date
 from notion.client import NotionClient
 from notion.block import TextBlock, PageBlock
 
-from flask import Flask, request, jsonify
-
+from flask import Flask, request
 
 from highlights_sync import sync
 
