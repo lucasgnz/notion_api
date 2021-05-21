@@ -1,29 +1,32 @@
 import requests
 import furl
 import time
-from datetime import date
-from notion.client import NotionClient
 from notion.block import TextBlock, PageBlock, QuoteBlock, CalloutBlock
-import re
-import os
-
-
-###CONFIG###
-library_db_id = '4b7625673a034a789bf055aabd180a0c'
-notes_db_id = '51695ec05e114ca581982a29abb46574'
-highlights_db_id = '5fa75c76-8fee-4663-a2d7-fc0d4aebc46e'
-notes_last_run_page_id = 'a1556700-7882-4a98-a823-e663065b8f75'
-highlights_last_run_page_id = None
-error_db_id = '53a7033e508b414eaa090a1235347316'
-############
+from notion_api.config import *
 
 def error(token, client, title, content):
     print("ERROR: {} / {}".format(title, content))
-    id = create_new_page(token, client, title, '', error_db_id)
+    id = create_new_page(token, client, title, error_db_id)
     page = client.get_block(id)
     page.children.add_new(TextBlock, title=content)
 
-def get_db_content(token, id, last_run_page_id, updated_main_db_pages):
+
+def get_db_properties(token, client, id):
+    headers = {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer '"" + token + ""'',
+        'Notion-Version': '2021-05-13'
+    }
+    response = requests.get('https://api.notion.com/v1/databases/' + id, headers=headers)
+    try:
+        return response.json()['properties']
+    except Exception as e:
+        error(token, client, "Error get_db_properties", id + ": " + str(e) + " / "+ str(response.json()))
+
+
+
+
+def get_db_content(token, client, id, last_run_page_id=None, updated_main_db_pages=[]):
     headers = {
         'Content-type': 'application/json',
         'Authorization': 'Bearer '""+token+""'',
@@ -64,7 +67,10 @@ def get_db_content(token, id, last_run_page_id, updated_main_db_pages):
                 ']' \
            '}'
     response = requests.post('https://api.notion.com/v1/databases/'+id+'/query', headers=headers, data=data.encode('utf-8'))
-    return [r for r in response.json()['results'] if r['id'] != last_run_page_id]
+    try:
+        return [r for r in response.json()['results'] if r['id'] != last_run_page_id]
+    except Exception as e:
+        error(token, client, "Error get_db_content", id+": "+str(e)+" / "+str(response.json()))
 
 def update_db_last_run_timestamp(token, id):
     now = round(time.time()*1000)
@@ -82,6 +88,14 @@ def update_db_last_run_timestamp(token, id):
                 '}' \
             '}'
     requests.patch('https://api.notion.com/v1/pages/' + id, headers=headers, data=data.encode('utf-8'))
+
+def get_page(token, id):
+    headers = {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer '"" + token + ""'',
+        'Notion-Version': '2021-05-13'
+    }
+    return requests.get('https://api.notion.com/v1/pages/' + id, headers=headers).json()
 
 def get_db_last_run_timestamp(token, id):
     headers = {
@@ -151,14 +165,13 @@ def get_id_by_url(token, url, db_id):
     else:
         return response.json()['results'][0]['id']
 
-def create_new_page(token, client, title, url, db_id):
+def create_new_page(token, client, title, db_id, metadata=[]):
     headers = {
         'Content-type': 'application/json; charset=utf-8',
         'Authorization': 'Bearer '"" + token + ""'',
         'Notion-Version': '2021-05-13'
     }
-    data = \
-    '{ ' \
+    data = '{ ' \
 	'"parent": { "database_id": "'+db_id+'" }, ' \
 	'"properties": { ' \
 	'	"Name": { ' \
@@ -169,20 +182,17 @@ def create_new_page(token, client, title, url, db_id):
     '				} ' \
 	'		    } ' \
 	'	    ] ' \
-	'   },' \
-    '   "Link": { ' \
-    '       "url": '+('null' if url=='' else '"'+url+'"')+'' \
-    '    },' \
-                                                          '"Status": {"select": {"name": "In progress"}}' \
+	'   }' \
+    ''+(',' if len(metadata)>0 else '')+'' \
+                                                          +','.join(metadata)+'' \
     '}' \
     '}'
 
     response = requests.post('https://api.notion.com/v1/pages', headers=headers, data=data.encode('utf-8'))
     try:
-        print(response.json())
         return response.json()['id']
     except Exception as e:
-        error(token, client, 'Create new page error', 'Title:{} \n \n Url: {} \n \n Database ID: {} \n \n Error: {}'.format(title, url, db_id, e))
+        error(token, client, 'Create new page error', 'Title:{} \n \n Database ID: {} \n \n Error: {} \n \n Metadata: {}'.format(title, db_id, response.json(), metadata))
 
 
 def add_main_db_link(token, id, main_db_id):
@@ -199,118 +209,49 @@ def add_main_db_link(token, id, main_db_id):
     #os.system('curl https://api.notion.com/v1/pages/'+id+' -H \'Authorization: Bearer \'"'+token+'"\'\' -H "Content-Type: application/json" -H "Notion-Version 2021-05-13" -X PATCH --data \'{"properties":{"Dofb": {"text": [{"type": "text","text": {"content": "'+main_db_id+'"}}]}}}\'')
 
 
-def change_status(token, page_id, status):
+def update_metadata(token, client, page_id, metadata):
     headers = {
         'Authorization': 'Bearer '"" + token + ""'',
         'Content-type': 'application/json',
         'Notion-Version': '2021-05-13'
     }
 
-    data = '{"properties":{"Status": {"select": {"name": "'+status+'"}}}}'
+    data = '{"properties": {'+', '.join(metadata)+'}}'
     URL = 'https://api.notion.com/v1/pages/' + page_id
     response = requests.patch(URL, data=data, headers=headers)
-    return response.json()['id']
+    try:
+        return response.json()['id']
+    except :
+        error(token, client, 'Update metadata', page_id+" / Data : "+ data + ' / ' + str(response.json()))
 
+def get_areas_projects_tags(token, client):
+    # Get areas
+    areas_ = [(a['id'], a['properties']['Name']['title'][0]['text']['content']) for a in
+              get_db_content(token, client, areas_db_id)]
 
-def update_main_page(token, client, main_page_id, title, highlights):
-    print("Adding {} highlights to {}".format(len(highlights), title))
+    # Get projects
+    projects_ = [(a['id'], a['properties']['Name']['title'][0]['text']['content'],
+                  [sn['text']['content'] for sn in a['properties']['Short name']['rich_text']]) for a in
+                 get_db_content(token, client, projects_db_id)]
 
-    change_status(token, main_page_id, "In progress")
+    # Get tags
+    tags_ = [(a['id'], a['properties']['Name']['title'][0]['text']['content']) for a in
+             get_db_content(token, client, tags_db_id)]
 
-    main_page = client.get_block(main_page_id)
-    for e in main_page.children:
-        if e.type == "quote" or e.type == "callout":
-            e.remove(permanently=True)
+    return areas_, projects_, tags_
 
-    notes_db = get_db_content(token, notes_db_id, notes_last_run_page_id,
-                              [main_page_id])  #### Add notes corresponding to updated main db pages
+def get_statuses_types(token, client, db_id):
+    # Get db_properties
+    db_properties = get_db_properties(token, client, db_id)
 
-    foot_notes = []
-    for highlight in highlights:
-        main_page.children.add_new(QuoteBlock, title=highlight)
-        for n in notes_db:
-            blocks = client.get_block(n['id']).children
-            note = blocks[1].title
-            if blocks[0].type != "quote":
-                highlight_text = ''
-                foot_notes.append(note)
-            else:
-                highlight_text = blocks[0].title
-            if highlight_text == highlight:
-                main_page.children.add_new(CalloutBlock, title=note)
-    for note in foot_notes:
-        main_page.children.add_new(CalloutBlock, title=note)
+    statuses_, types_ = [], []
 
-def cron(token, token_v2):
-    client = NotionClient(token_v2)
+    # Get statuses
+    if 'Status' in db_properties.keys():
+        statuses_ = [s['name'] for s in db_properties['Status']['select']['options']]
 
-    #### COMMAND ####
-    highlights_db = get_db_content(token, highlights_db_id, highlights_last_run_page_id, [])
+    # Get types of content
+    if 'Type' in db_properties.keys():
+        types_ = [s['name'] for s in db_properties['Type']['select']['options']]
 
-    updated_main_db_pages = []
-
-    main_db_pages_to_update = []
-
-    notes_db = get_db_content(token, notes_db_id, notes_last_run_page_id, [])
-    for n in notes_db:
-        title = n['properties']['Name']['title'][0]['text']['content']
-        url = n['properties']['Link']['url']
-        url = clean_url(url)
-
-        main_page_id = get_id_by_url(token, url, library_db_id)
-
-        if main_page_id == -1:
-            main_page_id = create_new_page(token, client, title, url, library_db_id)
-
-        main_db_pages_to_update.append(main_page_id)
-
-        if len(n['properties']['Digital library ref']['rich_text']) == 0:
-            add_main_db_link(token, n['id'], main_page_id)
-
-    print(main_db_pages_to_update)
-
-    # Add highlights to main DB
-    print("Adding highlights to main DB...")
-    for h in highlights_db:
-        title = h['properties']['Title']['title'][0]['text']['content']
-        print(title)
-        url = h['properties']['Link']['url']
-        url = clean_url(url)
-        try:
-            # OFFICIAL API (Blocks of type "quote" are still unsupported...)
-            # blocks = get_page_children(token, n['id'])
-            ######
-
-            # UNOFFICIAL API
-            main_page_id = get_id_by_url(token, url, library_db_id)
-            if main_page_id == -1:
-                main_page_id = create_new_page(token, client, title, url, library_db_id)
-
-            #add_main_db_link(token, h['id'], main_page_id)
-            update_main_page(token, client, main_page_id, title, [e.title for e in client.get_block(h['id']).children if e.type == "quote"])
-            updated_main_db_pages.append(main_page_id)
-            ######
-
-            #Delete highlight from highlight DB
-
-            # OFFICIAL API (removing pages is still not supported)
-
-            ######
-            # UNOFFICIAL API
-            print("Delete {}".format(h['id']))
-            h_ = client.get_block(h['id'])
-            h_.remove()
-        except Exception as e:
-            print(e)
-            error(token, client, "Adding new highlights", "From database (ID: {}) to main database (ID: {})".format(highlights_db_id, library_db_id)+ "\n \n Title: {} \n \n URL: {} \n \n Error: {}".format(title, url, e))
-
-    main_db_pages_to_update = list(set(main_db_pages_to_update) - set(updated_main_db_pages))
-    for page in main_db_pages_to_update:
-        try:
-            update_main_page(token, client, page, "["+page+"]",
-                         [e.title for e in client.get_block(page).children if e.type == "quote"])
-        except Exception as e:
-            error(token, client, "Adding new notes",
-                  "From database (ID: {}) to main database (ID: {})".format(highlights_db_id, library_db_id)
-                  + "\n \n Page ID: {} \n \n Error: {}".format(page, e))
-    return
+    return statuses_, types_

@@ -6,7 +6,9 @@ from notion.block import TextBlock, PageBlock
 from flask import Flask, request, jsonify
 
 
-from cron_v2 import cron
+from notion_api.highlights_sync import cron
+
+from notion_api.email import email
 
 app = Flask(__name__)
 
@@ -76,6 +78,16 @@ def add_record():
         return 'Adding the record failed', 500
 
 
+
+@app.route('/email', methods=['POST'])
+def email():
+    try:
+        token = request.form['token']
+        email(token, request.form['title'], request.form['note'])
+        return 'Email script executed', 200
+    except Exception as e:
+        print("ERROR {}".format(e))
+        return 'Email script failed', 500
 
 @app.route('/cron_', methods=['POST'])
 def cron_():
