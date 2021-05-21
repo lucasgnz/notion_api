@@ -13,7 +13,34 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return "<h1>Notion API</h1><p>Use /add_block, /add_page or /add_record</p>"
+    return "<h1>Notion API</h1><p>Use /email, /cron_, /add_block, /add_page or /add_record</p>"
+
+@app.route('/email', methods=['POST'])
+def email():
+    try:
+        token = request.form['token']
+        transfer_email_to_notion(token, request.form['title'], request.form['note'])
+        return 'Email script executed', 200
+    except Exception as e:
+        print("ERROR {}".format(e))
+        return 'Email script failed', 500
+
+@app.route('/cron_', methods=['POST'])
+def cron_():
+    try:
+        print(request.form)
+        token = request.form['token']
+        token_v2 = request.form['token_v2']
+        sync(token, token_v2)
+        return 'Cron script executed', 200
+    except Exception as e:
+        print("ERROR {}".format(e))
+        return 'Cron script failed', 500
+
+if __name__ == '__main__':
+    app.run(threaded=True, port=5000)        
+
+
 
 @app.route('/add_block', methods=['POST'])
 def add_block():
@@ -28,7 +55,7 @@ def add_block():
 
         today = date.today()
         new_block = page.children.add_new(TextBlock, title=today.strftime("%d/%m/%y") + ": " + note_title)
-        new_block.set('format.block_color', 'red')        
+        new_block.set('format.block_color', 'red')
         page.children.add_new(TextBlock, title=note_text)
 
         return 'The note added', 200
@@ -74,31 +101,3 @@ def add_record():
         return 'The record added', 200
     except Exception:
         return 'Adding the record failed', 500
-
-
-
-@app.route('/email', methods=['POST'])
-def email():
-    try:
-        token = request.form['token']
-        transfer_email_to_notion(token, request.form['title'], request.form['note'])
-        return 'Email script executed', 200
-    except Exception as e:
-        print("ERROR {}".format(e))
-        return 'Email script failed', 500
-
-@app.route('/cron_', methods=['POST'])
-def cron_():
-    try:
-        print(request.form)
-        token = request.form['token']
-        token_v2 = request.form['token_v2']
-        sync(token, token_v2)
-        return 'Cron script executed', 200
-    except Exception as e:
-        print("ERROR {}".format(e))
-        return 'Cron script failed', 500
-
-if __name__ == '__main__':
-    app.run(threaded=True, port=5000)        
-
