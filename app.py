@@ -6,9 +6,9 @@ from notion.block import TextBlock, PageBlock
 from flask import Flask, request, jsonify
 
 
-from notion_api.highlights_sync import cron
+from highlights_sync import cron
 
-from notion_api.email import email
+from email import email
 
 app = Flask(__name__)
 
