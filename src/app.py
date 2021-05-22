@@ -19,7 +19,9 @@ def index():
 def email():
     try:
         token = request.form['token']
-        transfer_email_to_notion(token, request.form['title'], request.form['note'])
+        token_v2 = request.form['token_v2']
+        client = NotionClient(token_v2)
+        transfer_email_to_notion(token, client, request.form['title'], request.form['note'])
         return 'Email script executed', 200
     except Exception as e:
         print("ERROR {}".format(e))
