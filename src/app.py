@@ -5,7 +5,7 @@ from notion.block import TextBlock, PageBlock
 
 from flask import Flask, request
 
-from workflow.highlights_sync import sync
+from workflow.sync import sync
 from workflow.email_to_notion import transfer_email_to_notion
 
 app = Flask(__name__)
@@ -27,8 +27,8 @@ def email():
         print("ERROR {}".format(e))
         return 'Email script failed', 500
 
-@app.route('/cron_', methods=['POST'])
-def cron_():
+@app.route('/sync_workflow', methods=['POST'])
+def sync_workflow():
     try:
         print(request.form)
         token = request.form['token']
